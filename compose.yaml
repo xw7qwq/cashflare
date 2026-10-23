@@ -1,0 +1,46 @@
+name: cashflare
+
+services:
+  fava:
+    # The lock contains CPython 3.13 Linux amd64 wheels.
+    platform: linux/amd64
+    build:
+      context: .
+    image: ${CASHFLARE_IMAGE:-cashflare:fava-1.30.16}
+    restart: unless-stopped
+    init: true
+    user: "${CASHFLARE_UID:-1000}:${CASHFLARE_GID:-1000}"
+    ports:
+      - "127.0.0.1:${CASHFLARE_PORT:-5000}:5000"
+    environment:
+      TZ: ${CASHFLARE_TIMEZONE:-Asia/Shanghai}
+    volumes:
+      - type: bind
+        source: ${CASHFLARE_DATA_DIR:-./data}
+        target: /data
+        bind:
+          create_host_path: false
+    read_only: true
+    tmpfs:
+      - /tmp:rw,noexec,nosuid,size=64m,mode=1777
+    cap_drop:
+      - ALL
+    security_opt:
+      - no-new-privileges:true
+    pids_limit: 128
+    mem_limit: 512m
+    healthcheck:
+      test:
+        - CMD
+        - python
+        - -c
+        - "import urllib.request; urllib.request.urlopen('http://127.0.0.1:5000/', timeout=5).close()"
+      interval: 15s
+      timeout: 10s
+      start_period: 15s
+      retries: 3
+    logging:
+      driver: json-file
+      options:
+        max-size: "10m"
+        max-file: "3"
