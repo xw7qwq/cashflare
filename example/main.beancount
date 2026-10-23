@@ -1,0 +1,94 @@
+; 示例账本：全部是虚构数据，用来试用 Fava、跑测试和检查推送格式。
+; 真实账本放在服务器的数据目录里，备份到私有仓库 ledger-data，不进入这个仓库。
+
+option "title" "示例账本"
+option "operating_currency" "CNY"
+
+2026-01-01 open Equity:Opening-Balances
+2026-01-01 open Assets:Bank:Checking CNY
+2026-01-01 open Assets:Cash CNY
+2026-01-01 open Assets:Broker:USD USD
+2026-01-01 open Liabilities:CreditCard CNY
+2026-01-01 open Income:Salary CNY
+2026-01-01 open Income:Interest
+2026-01-01 open Expenses:Food:Dining CNY
+2026-01-01 open Expenses:Food:Groceries CNY
+2026-01-01 open Expenses:Housing:Rent CNY
+2026-01-01 open Expenses:Transport CNY
+2026-01-01 open Expenses:Travel
+
+2026-07-01 price USD 7.10 CNY
+2026-09-01 price USD 7.05 CNY
+2026-10-01 price USD 7.12 CNY
+
+2026-07-01 * "期初余额"
+  Assets:Bank:Checking                 20000.00 CNY
+  Assets:Cash                            500.00 CNY
+  Assets:Broker:USD                     1000.00 USD @ 7.10 CNY
+  Equity:Opening-Balances
+
+2026-07-05 * "公司" "七月工资" #salary
+  Assets:Bank:Checking                 15000.00 CNY
+  Income:Salary
+
+2026-07-06 * "房东" "七月房租"
+  Expenses:Housing:Rent                 3500.00 CNY
+  Assets:Bank:Checking
+
+2026-07-12 * "超市" "买菜"
+  Expenses:Food:Groceries                286.40 CNY
+  Liabilities:CreditCard
+
+2026-07-20 * "面馆" "午饭"
+  Expenses:Food:Dining                    32.00 CNY
+  Assets:Cash
+
+2026-07-25 * "银行" "还信用卡"
+  Liabilities:CreditCard                 286.40 CNY
+  Assets:Bank:Checking
+
+2026-08-05 * "公司" "八月工资" #salary
+  Assets:Bank:Checking                 15000.00 CNY
+  Income:Salary
+
+2026-08-06 * "房东" "八月房租"
+  Expenses:Housing:Rent                 3500.00 CNY
+  Assets:Bank:Checking
+
+2026-08-14 * "地铁" "交通卡充值"
+  Expenses:Transport                     100.00 CNY
+  Assets:Bank:Checking
+
+2026-08-21 * "酒店" "出差住宿" #trip-tokyo
+  Expenses:Travel                        120.00 USD
+  Assets:Broker:USD
+
+2026-09-05 * "公司" "九月工资" #salary
+  Assets:Bank:Checking                 15000.00 CNY
+  Income:Salary
+
+2026-09-06 * "房东" "九月房租"
+  Expenses:Housing:Rent                 3500.00 CNY
+  Assets:Bank:Checking
+
+2026-09-18 * "餐厅" "朋友聚餐"
+  Expenses:Food:Dining                   268.00 CNY
+  Liabilities:CreditCard
+
+2026-09-30 * "券商" "利息"
+  Assets:Broker:USD                        3.20 USD
+  Income:Interest                         -3.20 USD
+
+2026-10-05 * "公司" "十月工资" #salary
+  Assets:Bank:Checking                 15000.00 CNY
+  Income:Salary
+
+2026-10-06 * "房东" "十月房租"
+  Expenses:Housing:Rent                 3500.00 CNY
+  Assets:Bank:Checking
+
+2026-10-09 * "超市" "买菜"
+  Expenses:Food:Groceries                193.50 CNY
+  Liabilities:CreditCard
+
+2026-10-15 balance Assets:Cash 468.00 CNY
