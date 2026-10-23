@@ -1,0 +1,45 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  check:
+    name: check
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out repository
+        uses: actions/checkout@v6
+        with:
+          persist-credentials: false
+      - name: Set up Python
+        uses: actions/setup-python@v6
+        with:
+          python-version: '3.12'
+          cache: pip
+          cache-dependency-path: requirements.lock
+      - name: Install dependencies
+        run: python -m pip install -r requirements.lock
+      - name: Check the example ledger
+        run: bean-check example/main.beancount
+      - name: Run unit tests
+        run: python -m unittest discover -s tests -v
+      - name: Validate the Compose file
+        run: LEDGER_DATA_DIR=/tmp/ledger docker compose config --quiet
+      - name: Build the image
+        run: docker build --tag ledger:check .
+      - name: Smoke-test the image
+        run: |
+          docker run --rm --entrypoint python ledger:check -c "import fava, beancount, jobs.snapshot, jobs.panel, jobs.backup"
+          docker run --rm -v "$PWD/example:/data:ro" -e LEDGER_STATE_DIR=/tmp/state ledger:check python -m jobs snapshot

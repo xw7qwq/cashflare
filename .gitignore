@@ -1,0 +1,11 @@
+# Real books, secrets and job state stay on the server.
+.env
+state/
+secrets/
+data/
+*.beancount
+!example/*.beancount
+
+__pycache__/
+.venv/
+.DS_Store

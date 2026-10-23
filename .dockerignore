@@ -1,0 +1,5 @@
+# Only the jobs package and the lock file go into the image; never the books or secrets.
+*
+!jobs/
+!requirements.lock
+jobs/__pycache__/

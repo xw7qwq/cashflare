@@ -1,0 +1,48 @@
+name: ledger
+
+x-hardening: &hardening
+  user: "${LEDGER_UID:-1000}:${LEDGER_GID:-1000}"
+  read_only: true
+  tmpfs: [/tmp]
+  cap_drop: [ALL]
+  security_opt: [no-new-privileges:true]
+  restart: unless-stopped
+
+services:
+  fava:
+    <<: *hardening
+    build: .
+    image: ledger:local
+    environment:
+      LEDGER_FILE: /data/${LEDGER_MAIN_FILE:-main.beancount}
+    volumes:
+      - ${LEDGER_DATA_DIR:?set LEDGER_DATA_DIR in .env}:/data
+    ports:
+      # Local access only; the public route is the tunnel below.
+      - "127.0.0.1:${FAVA_PORT:-5000}:5000"
+
+  tunnel:
+    image: cloudflare/cloudflared:2026.10.3
+    restart: unless-stopped
+    command: tunnel --no-autoupdate run
+    environment:
+      TUNNEL_TOKEN: ${CLOUDFLARE_TUNNEL_TOKEN:-}
+    depends_on: [fava]
+
+  jobs:
+    <<: *hardening
+    build: .
+    image: ledger:local
+    command: ["python", "-m", "jobs", "run"]
+    environment:
+      LEDGER_FILE: /data/${LEDGER_MAIN_FILE:-main.beancount}
+      LEDGER_STATE_DIR: /state
+      LEDGER_PANEL_INGEST_URL: ${LEDGER_PANEL_INGEST_URL:-}
+      LEDGER_PANEL_INGEST_TOKEN: ${LEDGER_PANEL_INGEST_TOKEN:-}
+      LEDGER_BACKUP_REMOTE: ${LEDGER_BACKUP_REMOTE:-}
+      LEDGER_BACKUP_KEY: /run/secrets/ledger_backup_key
+      LEDGER_JOBS_INTERVAL: ${LEDGER_JOBS_INTERVAL:-900}
+    volumes:
+      - ${LEDGER_DATA_DIR:?set LEDGER_DATA_DIR in .env}:/data
+      - ./state:/state
+      - ./secrets:/run/secrets:ro
