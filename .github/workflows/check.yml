@@ -1,0 +1,42 @@
+name: Check deployment
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  check:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    env:
+      CASHFLARE_IMAGE: cashflare:ci
+      CASHFLARE_PORT: "15000"
+    steps:
+      - uses: actions/checkout@d23441a48e516b6c34aea4fa41551a30e30af803 # v6
+      - name: Check ledger tools
+        run: python3 -m unittest discover -s tests -v
+      - name: Initialize private test ledger
+        run: |
+          python3 scripts/init-ledger.py
+          printf 'CASHFLARE_UID=%s\nCASHFLARE_GID=%s\n' "$(id -u)" "$(id -g)" >> "$GITHUB_ENV"
+      - name: Build and validate
+        run: |
+          docker compose -p cashflare-ci config --quiet
+          docker compose -p cashflare-ci build
+          docker compose -p cashflare-ci run --rm --no-deps fava bean-check --cache-filename /tmp/check.picklecache /data/main.beancount
+          docker run --rm --network none --mount type=bind,src="$PWD/examples",dst=/examples,readonly "$CASHFLARE_IMAGE" bean-check --cache-filename /tmp/example.picklecache /examples/shared-expenses.beancount
+      - name: Start Fava and check HTTP
+        run: |
+          docker compose -p cashflare-ci up -d --wait --wait-timeout 60
+          curl --fail --silent --show-error --location http://127.0.0.1:15000/ > /tmp/cashflare.html
+          python3 -c 'from pathlib import Path; assert "Cashflare" in Path("/tmp/cashflare.html").read_text()'
+          docker compose -p cashflare-ci exec -T fava python -c 'import os, importlib.util; assert os.geteuid() != 0; assert importlib.util.find_spec("pip") is None; assert importlib.util.find_spec("ensurepip") is None'
+      - name: Stop test deployment
+        if: always()
+        run: |
+          docker compose -p cashflare-ci logs --tail=50
+          docker compose -p cashflare-ci down --volumes

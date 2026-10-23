@@ -1,0 +1,31 @@
+; Fictional standalone example; do not include this in a real ledger.
+option "title" "Shared expense example"
+option "operating_currency" "CNY"
+
+2026-01-01 open Assets:Bank:Checking CNY
+2026-01-01 open Assets:Pending:SharedExpenses:ExampleEvent CNY
+2026-01-01 open Equity:Opening-Balances CNY
+2026-01-01 open Expenses:Education:Competitions CNY
+
+2026-01-01 * "示例期初余额"
+  Assets:Bank:Checking  500.00 CNY
+  Equity:Opening-Balances  -500.00 CNY
+
+2026-01-02 * "示例活动收款方" "统一支付三份费用" #shared-expense ^example-event
+  Assets:Pending:SharedExpenses:ExampleEvent  300.00 CNY
+  Assets:Bank:Checking  -300.00 CNY
+
+2026-01-02 * "示例成员A" "收回一份费用" #shared-expense ^example-event
+  Assets:Bank:Checking  100.00 CNY
+  Assets:Pending:SharedExpenses:ExampleEvent  -100.00 CNY
+
+2026-01-02 * "示例成员B" "收回一份费用" #shared-expense ^example-event
+  Assets:Bank:Checking  100.00 CNY
+  Assets:Pending:SharedExpenses:ExampleEvent  -100.00 CNY
+
+2026-01-02 ! "费用分摊结算" "本人份额暂定" #allocation-review ^example-event
+  allocation_status: "示例：按收付款差额暂定，仍应核对实际分摊"
+  Expenses:Education:Competitions  100.00 CNY
+  Assets:Pending:SharedExpenses:ExampleEvent  -100.00 CNY
+
+2026-01-03 balance Assets:Pending:SharedExpenses:ExampleEvent  0.00 CNY

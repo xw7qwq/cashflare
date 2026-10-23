@@ -1,0 +1,18 @@
+; Adjust currencies and account names to match your own records.
+1970-01-01 commodity CNY
+  name: "人民币"
+
+1970-01-01 open Assets:Bank:Checking CNY
+1970-01-01 open Assets:Cash CNY
+1970-01-01 open Assets:Wallet:WeChat CNY
+1970-01-01 open Assets:Wallet:Alipay CNY
+1970-01-01 open Assets:Pending:SharedExpenses CNY
+1970-01-01 open Liabilities:Pending:SharedCollections CNY
+1970-01-01 open Equity:Opening-Balances CNY
+1970-01-01 open Income:Salary CNY
+1970-01-01 open Income:FamilySupport CNY
+1970-01-01 open Expenses:Food CNY
+1970-01-01 open Expenses:Transport CNY
+1970-01-01 open Expenses:Shopping CNY
+1970-01-01 open Expenses:Education:Competitions CNY
+1970-01-01 open Expenses:Travel:Accommodation CNY

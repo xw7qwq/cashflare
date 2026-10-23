@@ -1,0 +1,7 @@
+; Empty template. Store real transactions only in the private data directory.
+option "title" "Cashflare"
+option "operating_currency" "CNY"
+option "documents" "documents"
+
+include "accounts.beancount"
+include "transactions/*.beancount"

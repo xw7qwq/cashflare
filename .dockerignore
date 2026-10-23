@@ -1,0 +1,4 @@
+# Only image build inputs enter the Docker build context.
+**
+!Dockerfile
+!requirements.lock.txt
