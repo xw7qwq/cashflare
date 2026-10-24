@@ -16,6 +16,13 @@ COPY requirements.lock .
 RUN pip install --no-cache-dir -r requirements.lock
 COPY jobs ./jobs
 
-USER 1000:1000
+# The containers run as the owner of the data directory (LEDGER_UID/LEDGER_GID in compose.yaml).
+# ssh refuses to start for a uid without a passwd entry, so that uid gets one, with /tmp as home.
+ARG LEDGER_UID=1000
+ARG LEDGER_GID=1000
+RUN (getent group "$LEDGER_GID" >/dev/null || groupadd --gid "$LEDGER_GID" ledger) \
+    && (getent passwd "$LEDGER_UID" >/dev/null || useradd --uid "$LEDGER_UID" --gid "$LEDGER_GID" --no-create-home --home-dir /tmp --shell /usr/sbin/nologin ledger)
+
+USER ${LEDGER_UID}:${LEDGER_GID}
 EXPOSE 5000
 CMD ["sh", "-c", "exec fava --host 0.0.0.0 --port 5000 \"$LEDGER_FILE\""]

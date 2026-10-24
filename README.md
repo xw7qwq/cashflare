@@ -41,7 +41,7 @@ docker compose up -d --build
 
 把 `secrets/ledger_backup_key.pub` 加为 `ledger-data` 的部署密钥并勾选写权限（仓库 Settings → Deploy keys，或 `gh repo deploy-key add secrets/ledger_backup_key.pub --repo xw7qwq/ledger-data --allow-write`）。`ledger-data` 建成私有空仓库，不要勾选生成 README。第一次推送时会把 GitHub 的主机密钥记到 `state/known_hosts`。
 
-`LEDGER_UID` / `LEDGER_GID` 要和数据目录的属主一致（`stat -c '%u:%g' "$LEDGER_DATA_DIR"`），否则 Fava 写不了账本，备份也提交不了。
+`LEDGER_UID` / `LEDGER_GID` 要和数据目录的属主一致（`stat -c '%u:%g' "$LEDGER_DATA_DIR"`），否则 Fava 写不了账本，备份也提交不了。镜像构建时会给这个 uid 建一个用户（ssh 推送备份需要），所以改了这两个值要带 `--build` 重新构建。
 
 从现在的部署迁过来：先给数据目录做一次打包备份，停掉旧的 Fava 和隧道容器，把 `LEDGER_DATA_DIR` 指向原来的数据目录，`CLOUDFLARE_TUNNEL_TOKEN` 沿用原来的隧道，在 Zero Trust 里把 `fava.lucius7.dev` 的服务地址改成 `http://fava:5000`，然后 `docker compose up -d --build`。Access 策略不用动。
 
