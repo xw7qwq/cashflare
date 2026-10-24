@@ -1,5 +1,12 @@
 name: ledger
 
+# The image creates a user for LEDGER_UID so ssh can push the backup; rebuild after changing it.
+x-build: &build
+  context: .
+  args:
+    LEDGER_UID: ${LEDGER_UID:-1000}
+    LEDGER_GID: ${LEDGER_GID:-1000}
+
 x-hardening: &hardening
   user: "${LEDGER_UID:-1000}:${LEDGER_GID:-1000}"
   read_only: true
@@ -11,7 +18,7 @@ x-hardening: &hardening
 services:
   fava:
     <<: *hardening
-    build: .
+    build: *build
     image: ledger:local
     environment:
       LEDGER_FILE: /data/${LEDGER_MAIN_FILE:-main.beancount}
@@ -31,7 +38,7 @@ services:
 
   jobs:
     <<: *hardening
-    build: .
+    build: *build
     image: ledger:local
     command: ["python", "-m", "jobs", "run"]
     environment:

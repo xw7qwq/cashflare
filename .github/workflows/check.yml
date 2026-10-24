@@ -43,3 +43,8 @@ jobs:
         run: |
           docker run --rm --entrypoint python ledger:check -c "import fava, beancount, jobs.snapshot, jobs.panel, jobs.backup"
           docker run --rm -v "$PWD/example:/data:ro" -e LEDGER_STATE_DIR=/tmp/state ledger:check python -m jobs snapshot
+      - name: Check that ssh runs as the container user
+        run: |
+          docker run --rm --entrypoint ssh ledger:check -V
+          docker build --quiet --build-arg LEDGER_UID=1234 --build-arg LEDGER_GID=1234 --tag ledger:uid .
+          docker run --rm --user 1234:1234 --read-only --tmpfs /tmp --entrypoint ssh ledger:uid -V
